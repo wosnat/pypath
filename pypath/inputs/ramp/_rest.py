@@ -47,8 +47,8 @@ def ramp_id_types(
     _logger._log(f'Loading RaMP the list of ID types from `{url}`.')
     c = curl.Curl(url, silent = True, large = False)
 
-    if c.result is None:
-
+    if c.result is None or c.download_failed: # bug fix
+        
         msg = 'Failed to load RaMP ID types.'
         _logger._log(msg)
         warnings.warn(msg)
