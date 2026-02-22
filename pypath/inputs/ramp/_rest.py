@@ -47,8 +47,8 @@ def ramp_id_types(
     _logger._log(f'Loading RaMP the list of ID types from `{url}`.')
     c = curl.Curl(url, silent = True, large = False)
 
-    if c.result is None or c.download_failed: # bug fix
-        
+    if c.result is None:
+
         msg = 'Failed to load RaMP ID types.'
         _logger._log(msg)
         warnings.warn(msg)
@@ -57,11 +57,17 @@ def ramp_id_types(
 
     else:
 
-        result = {
-            id_type.strip()
-            for i in json.loads(c.result)['data']
-            if not entity_type or i['analyteType'] == entity_types[entity_type]
-            for id_type in i['idTypes'].split(',')
-        }
-
+        try:
+            result = {
+                id_type.strip()
+                for i in json.loads(c.result)['data']
+                if not entity_type or i['analyteType'] == entity_types[entity_type]
+                for id_type in i['idTypes'].split(',')
+            }
+        except (json.JSONDecodeError, KeyError, TypeError):
+            msg = 'Failed to load RaMP ID types.'
+            _logger._log(msg)
+            warnings.warn(msg)
+            result = set()
+                
     return result
